@@ -15,16 +15,16 @@
 ;;;		All registers stored in BCD 
 
 
-RxBuffL		=	$E9		; receive buffer pointer low byte	- ZP location change as required
+RxBuffL		=	$2B		; receive buffer pointer low byte	- ZP location change as required
 TxBuffL		=	RxBuffL		
-RxBuffH		=	$EA		; receive buffer pointer high byte	ZP location change as required
+RxBuffH		=	$2C		; receive buffer pointer high byte	ZP location change as required
 TxBuffH		=	RxBuffH	
-ByteBuff	=	$EB		; byte buffer for Tx/Rx routines	ZP location change as required
-I2cCountL	=	$ED		; Tx/Rx byte count low byte			ZP location change as required
-I2cCountH	=	$EE		; Tx/Rx byte count high byte		ZP location change as required
+ByteBuff	=	$2D		; byte buffer for Tx/Rx routines	ZP location change as required
+I2cCountL	=	$2E		; Tx/Rx byte count low byte			ZP location change as required
+I2cCountH	=	$2F		; Tx/Rx byte count high byte		ZP location change as required
 
 Mybuff		= 	$6000	; start of memory for storying data in or out  (chaneg as required)
-I2CPort		=	$8001		; 6522 Via Output Register Port A	(change to suit system)
+I2CPort		=	$301		; 6522 Via Output Register Port A	(change to suit system)
 ViaDDRA		=	I2CPort+2	; 6522 Via Data Direction Register Port A
 
 RTCAddress	=	$68			; RTC clock module I2C address
@@ -314,21 +314,21 @@ DoNack
 	RTS
 
 Setuptime				;; just some data for first time setup
-	lda #$30
-	sta $6000
-	lda #$25
-	sta $6001
-	lda #$19
+	lda #$30			; seconds - All values in BCD
+	sta $6000			; To convert - Take dec number ie 25 mins but load as hex number ie $25
+	lda #$25			; Minutes - 
+	sta $6001		
+	lda #$19			; hours
 	sta $6002
-	lda #$7
+	lda #$7				; day of week - 1 - 7 (mon to sun)
 	sta $6003
-	lda #$18
+	lda #$18			;day of month
 	sta $6004
-	lda #$1
+	lda #$1				; month number
 	sta $6005
-	lda #$20
+	lda #$20			; year number 
 	sta $6006
-	lda #$20
+	lda #$20			; year number
 	sta $6007
 	rts
 
