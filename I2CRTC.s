@@ -15,13 +15,13 @@
 ;;;		All registers stored in BCD 
 
 
-RxBuffL		=	$2B		; receive buffer pointer low byte	- ZP location change as required
+RxBuffL		=	$00		; receive buffer pointer low byte	- ZP location change as required
 TxBuffL		=	RxBuffL		
-RxBuffH		=	$2C		; receive buffer pointer high byte	ZP location change as required
+RxBuffH		=	$01		; receive buffer pointer high byte	ZP location change as required
 TxBuffH		=	RxBuffH	
-ByteBuff	=	$2D		; byte buffer for Tx/Rx routines	ZP location change as required
-I2cCountL	=	$2E		; Tx/Rx byte count low byte			ZP location change as required
-I2cCountH	=	$2F		; Tx/Rx byte count high byte		ZP location change as required
+ByteBuff	=	$03		; byte buffer for Tx/Rx routines	ZP location change as required
+I2cCountL	=	$04		; Tx/Rx byte count low byte			ZP location change as required
+I2cCountH	=	$05		; Tx/Rx byte count high byte		ZP location change as required
 
 Mybuff		= 	$6000	; start of memory for storying data in or out  (chaneg as required)
 I2CPort		=	$301		; 6522 Via Output Register Port A	(change to suit system)
