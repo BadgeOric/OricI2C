@@ -5,16 +5,12 @@
 
 
 main
-	lda $0E
-	beq nothires 
-	rts
-nothires
-	lda #$42			;; just some nominal values
-	sta rtcbuff,0			;;	
-	lda #$15			;; lines should be commented out or deleted
-	sta rtcbuff,1			;;
-	lda #$18			;; if using a real 1307 module
-	sta rtcbuff,2
+	;lda #$42			;; just some nominal values
+	;sta rtcbuff,0			;;	
+	;lda #$15			;; lines should be commented out or deleted
+	;sta rtcbuff,1			;;
+	;lda #$18			;; if using a real 1307 module
+	;sta rtcbuff,2
 	;;;;  set buffer to be 18:15:42			
 						
 						
