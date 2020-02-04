@@ -15,8 +15,11 @@ I2cCountL	=	$03		; Tx/Rx byte count low byte			ZP location change as required
 I2cCountH	=	$04		; Tx/Rx byte count high byte		ZP location change as required
 RWFlag		= 	$05
 OldPCR		=	$06		; temp store for via pcr 
-DevAddress	=	$07
-DelayFlag	=	$08		; Set to 1 to have a delay after each sent byte (LCDs Need this).. otherwise 0
+DevAddress	=	$07		; main device address
+DevReadAdd	=	$08		; some devices have a 2nd address for read/write ops
+DelayFlag	=	$09		; Set to 1 to have a delay after each sent byte (LCDs Need this).. otherwise 0
+DATFlag		= 	$0A		;Set to 1 to have #00 sent before a read.
+
 I2CPort		=	$301		; 6522 Via Output Register Port A	(change to suit system)
 ViaDDRA		=	I2CPort+2	; 6522 Via Data Direction Register Port A
 ViaPCR		= 	I2CPort+12	; Preipeheral Control Register to Diable AY chip
@@ -50,14 +53,20 @@ Init
 	sta I2cCountH		;; limit to 255 bytes send/receive at the moment
 
 GetData
-	jsr SendAddr			; send address to activate device (starts in write mode)
 	lda RWFlag				; test for read or write needed (0 is write, 1 = read)
 	bne RcvRoutine
+	jsr StopI2c	
+	jsr SendAddr			; send address to activate device (starts in write mode)
 	jsr SendData
 	jmp EndofGetorSend
 RcvRoutine
+	jsr StopI2c	
+	lda DATFlag
+	beq NoZero
+	jsr SendAddr
 	LDA #00					; send #00 to select first register. device auto increments
 	JSR ByteOut
+NoZero	
 	jsr SndReadAdd
 	jsr ReadData
 EndofGetorSend
@@ -111,9 +120,9 @@ WaitACr
 
 	JSR	StartI2c		; generate start condition
 
-	LDA	DevAddress		; get address (including read/write bit)
+	LDA	DevReadAdd		; get address (including read/write bit)
 	ROL
-	ORA #1
+	ORA #1					
 	JSR	ByteOut			; send address byte
 	BCS	StopI2c			; branch if no ack
 	RTS				; else exit
@@ -128,6 +137,8 @@ WriteLoop
 	LDA	(RxBuffL),Y 	; get byte from buffer
 	JSR	ByteOut			; send byte to device
 	BCS	StopI2c			; branch if no ack
+	lda DelayFlag
+	bne Skipdelay		;check delay flag is delay is needed (1 set)
 	jsr	SpinWheels
 Skipdelay
 	INY				; increment index
@@ -138,7 +149,7 @@ NoHiWrInc
 	DEC	I2cCountL		; decrement count low byte
 	BNE	WriteLoop		; loop if not all done
 
-	DEC	I2cCountH		; increment count high byte
+	DEC	I2cCountH		; decrement count high byte
 	BNE	WriteLoop		; loop if not all done
 
 	RTS
@@ -151,7 +162,7 @@ readloop2
 	STA (TxBuffL),Y
 	jsr DoAck2
 	INY
-	cpy #7				; have I done 8 bytes?
+	cpy I2cCountL			; have I done number of bytes?
 	bne readloop2
 	jsr DoNack
 	jsr StopI2c			; finish read
@@ -287,6 +298,10 @@ DoNack
 	STA I2CPort
 	RTS
 
+
+
+;;; Delay routine - sometimes needed on sending data. Depends on device.
+;;; LCD displays need delays between commands and data before next byte is sent.
 SpinWheels
 	pha
 	lda #255
